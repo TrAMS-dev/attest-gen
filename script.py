@@ -12,7 +12,7 @@ import csv
 pdfmetrics.registerFont(TTFont('CenturyGothic', 'centurygothic.ttf'))
 pdfmetrics.registerFont(TTFont('CenturyGothicBold', 'centurygothic_bold.ttf'))
 
-def create_certificate(navn, dato, filnavn, malbilde="Template.png"):
+def create_certificate(navn, dato, filnavn, malbilde="Template.png", signature_file="signature.png"):
     c = canvas.Canvas(filnavn, pagesize=A4)
     width, height = A4
 
@@ -61,17 +61,27 @@ def create_certificate(navn, dato, filnavn, malbilde="Template.png"):
         c.drawCentredString(width / 2, y_pos, line)
         y_pos -= 18
 
+    if signature_file and os.path.exists(signature_file):
+        sign_img = ImageReader(signature_file)
+        sign_w, sign_h = sign_img.getSize()
+        target_w = 180
+        scale = target_w / sign_w
+        target_h = sign_h * scale
+        x = (width - target_w) / 2
+        y = 110
+        c.drawImage(sign_img, x, y, width=target_w, height=target_h, mask="auto")
+
     c.save()
 
 # Funksjon som genererer attester for alle deltagere
-def generate_certificates(deltagere, output_dir="attester", malbilde="Template.png"):
+def generate_certificates(deltagere, output_dir="attester", malbilde="Template.png", signature_file="signature.png"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     for navn, dato in deltagere:
         safe_navn = navn.replace(" ", "_")  # erstatt mellomrom med understrek for filnavn
         filnavn = os.path.join(output_dir, f"deltakerbevis_{safe_navn}.pdf")
-        create_certificate(navn, dato, filnavn, malbilde)
+        create_certificate(navn, dato, filnavn, malbilde, signature_file)
 
 def fetch_names_from_csv(filename="deltagere.csv"):
     deltagere = []
@@ -86,5 +96,3 @@ def fetch_names_from_csv(filename="deltagere.csv"):
 if __name__ == "__main__":
     deltagere = fetch_names_from_csv("deltagere.csv")
     generate_certificates(deltagere)
-
-
