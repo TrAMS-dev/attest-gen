@@ -108,8 +108,9 @@ def main():
             else:
                 st.warning("Ingen signatur funnet. Attestene vil bli generert uten signatur.")
 
-            if  os.path.exists(DEFAULT_OUTPUT_DIR):
+            if os.path.exists(DEFAULT_OUTPUT_DIR):
                 wipe_folder(DEFAULT_OUTPUT_DIR)
+            os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
 
             progress_bar = st.progress(0)
             status_text = st.empty()
