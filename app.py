@@ -7,12 +7,12 @@ import streamlit as st
 
 from attest_gen import create_certificate, register_fonts as register_fonts_impl
 from attest_gen.paths import DEFAULT_OUTPUT_DIR, DEFAULT_SIGNATURE, DEFAULT_TEMPLATE
+from attest_gen.utils import wipe_folder
 
 # Page configuration
 st.set_page_config(
     page_title="TrAMS Attest Generator",
     page_icon="📜",
-    layout="wide",
 )
 
 
@@ -34,36 +34,25 @@ def main():
     if not register_fonts():
         st.stop()
 
-    with st.sidebar:
-        st.header("Innstillinger")
 
-        dato = st.date_input(
-            "Kursdato",
-            value=datetime.now().date(),
-            help="Datoen kurset ble arrangert",
-        )
-        dato_formatted = dato.strftime("%d.%m.%Y")
+    dato = st.date_input(
+        "Kursdato",
+        value=datetime.now().date(),
+        help="Datoen kurset ble arrangert",
+    )
+    dato_formatted = dato.strftime("%d.%m.%Y")
 
-        st.subheader("Signatur")
-        signature_file = st.file_uploader(
-            "Last opp signaturbilde",
-            type=["png", "jpg", "jpeg"],
-            help="Last opp signaturbildet som skal brukes på attestene",
-        )
+    signature_file = st.file_uploader(
+        "Last opp signaturbilde (valgfritt)",
+        type=["png", "jpg", "jpeg"],
+        help="Last opp signaturbildet som skal brukes på attestene",
+    )
 
-        st.subheader("Mal (valgfritt)")
-        template_file = st.file_uploader(
-            "Last opp malbilde",
-            type=["png", "jpg", "jpeg"],
-            help="Hvis du ikke laster opp en mal, brukes malen fra assets/.",
-        )
-
-        st.subheader("Lagring")
-        output_dir = st.text_input(
-            "Mappe for lagring av attester",
-            value=DEFAULT_OUTPUT_DIR,
-            help="Mappen hvor de genererte attestene skal lagres",
-        )
+    template_file = st.file_uploader(
+        "Last opp malbilde (valgfritt)",
+        type=["png", "jpg", "jpeg"],
+        help="Hvis du ikke laster opp en mal, brukes malen fra assets/.",
+    )
 
     st.header("Deltakere")
 
@@ -119,8 +108,8 @@ def main():
             else:
                 st.warning("Ingen signatur funnet. Attestene vil bli generert uten signatur.")
 
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
+            if  os.path.exists(DEFAULT_OUTPUT_DIR):
+                wipe_folder(DEFAULT_OUTPUT_DIR)
 
             progress_bar = st.progress(0)
             status_text = st.empty()
@@ -130,7 +119,7 @@ def main():
             for i, (navn, dato) in enumerate(deltagere):
                 status_text.text(f"Genererer attest for {navn}...")
                 safe_navn = navn.replace(" ", "_")
-                filnavn = os.path.join(output_dir, f"deltakerbevis_{safe_navn}.pdf")
+                filnavn = os.path.join(DEFAULT_OUTPUT_DIR, f"deltakerbevis_{safe_navn}.pdf")
 
                 try:
                     create_certificate(navn, dato, filnavn, template_path, signature_path)
@@ -144,7 +133,7 @@ def main():
             progress_bar.empty()
 
             st.success(f"✅ Genererte {len(generated_files)} attester!")
-            st.info(f"Attestene er lagret i mappen: `{output_dir}`")
+            st.info(f"Attestene er lagret i mappen: `{DEFAULT_OUTPUT_DIR}`")
 
             if template_file and os.path.exists(template_path) and template_path != DEFAULT_TEMPLATE:
                 os.unlink(template_path)
