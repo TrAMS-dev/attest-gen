@@ -35,6 +35,7 @@ Denne Streamlit-appen er designet for å lage ferdiglagde TrAMS-attester for HLR
 
 6. **Bruk appen**:
    - Velg **kursdato**, last opp signaturbilde (og eventuelt malbilde)
+   - Under **Rediger teksten på attesten** kan du endre tittelen og teksten på attesten i ett tekstfelt (bruk `{navn}` og `{dato}` som plassholdere; `#` = tittel, `##` = stor fet tekst, `**tekst**` = fet tekst, `>` = liten tekst)
    - Under **Deltakere**, velg **Kun navn** eller **Navn + e-post**
    - **Kun navn**: skriv inn deltakernes navn (ett per linje), generer, og last ned ZIP
    - **Navn + e-post**: lim inn navn og e-poster i hver sin tekstboks (samme antall linjer, linje 1 matcher linje 1). Etter generering kan du sende hver person sitt deltakerbevis på e-post
@@ -78,7 +79,7 @@ attest-gen/
 │   ├── email.py        # Resend e-postsending med PDF-vedlegg
 │   └── paths.py       # Stier til ressurser
 └── assets/             # Maler og fonter
-    ├── Template.png    # Mal for attestene (kan overstyres i appen)
+    ├── Template.png    # Mal uten tekst (kan overstyres i appen)
     ├── signature.png   # Standard signatur (kan overstyres i appen)
     └── fonts/
         ├── centurygothic.ttf

@@ -1,6 +1,7 @@
 """TrAMS attest generator – certificate PDFs for first-aid course."""
 
 from attest_gen.certificate import (
+    DEFAULT_CERTIFICATE_TEXT,
     create_certificate,
     generate_certificates,
     parse_participants_from_file,
@@ -23,6 +24,7 @@ from attest_gen.paths import (
 )
 
 __all__ = [
+    "DEFAULT_CERTIFICATE_TEXT",
     "create_certificate",
     "generate_certificates",
     "parse_participants_from_file",
