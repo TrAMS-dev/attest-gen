@@ -5,7 +5,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from attest_gen import create_certificate, register_fonts as register_fonts_impl
+from attest_gen import DEFAULT_CERTIFICATE_TEXT, create_certificate, register_fonts as register_fonts_impl
 from attest_gen.email import (
     get_resend_config,
     is_valid_email,
@@ -86,7 +86,34 @@ def parse_names_and_emails(
     return participants, []
 
 
-def generate_certificates_ui(deltagere: list[tuple[str, str, str | None]], template_file, signature_file) -> None:
+def reset_certificate_text() -> None:
+    st.session_state["cert_text"] = DEFAULT_CERTIFICATE_TEXT
+
+
+def render_certificate_text_editor() -> str:
+    """Show the editable certificate text. Returns the current text."""
+    with st.expander("Rediger teksten på attesten"):
+        st.caption(
+            "Bruk {navn} og {dato} som plassholdere. Start en linje med `#` for tittel, "
+            "`##` for stor fet tekst og `>` for liten tekst. Skriv `**tekst**` for fet tekst. "
+            "Hver tomme linje gir litt ekstra luft."
+        )
+        tekst = st.text_area(
+            "Tekst på attesten",
+            value=DEFAULT_CERTIFICATE_TEXT,
+            height=480,
+            key="cert_text",
+        )
+        st.button("Tilbakestill til standardtekst", on_click=reset_certificate_text)
+    return tekst
+
+
+def generate_certificates_ui(
+    deltagere: list[tuple[str, str, str | None]],
+    template_file,
+    signature_file,
+    tekst: str,
+) -> None:
     """Generate PDFs and store paths + participants in session_state."""
     template_path = DEFAULT_TEMPLATE
     tmp_template = None
@@ -130,7 +157,7 @@ def generate_certificates_ui(deltagere: list[tuple[str, str, str | None]], templ
         filnavn = os.path.join(DEFAULT_OUTPUT_DIR, f"deltakerbevis_{safe_navn}.pdf")
 
         try:
-            create_certificate(navn, dato, filnavn, template_path, signature_path)
+            create_certificate(navn, dato, filnavn, template_path, signature_path, tekst)
             generated_files.append(filnavn)
             generated_recipients.append((navn, dato, email, filnavn))
         except Exception as e:
@@ -280,8 +307,10 @@ def main():
     template_file = st.file_uploader(
         "Last opp malbilde (valgfritt)",
         type=["png", "jpg", "jpeg"],
-        help="Hvis du ikke laster opp en mal, brukes malen fra assets/.",
+        help="Hvis du ikke laster opp en mal, brukes malen fra assets/. Malen skal være uten tekst.",
     )
+
+    tekst = render_certificate_text_editor()
 
     st.header("Deltakere")
     input_mode = st.radio(
@@ -345,7 +374,7 @@ def main():
             )
 
         if generate_button:
-            generate_certificates_ui(deltagere, template_file, signature_file)
+            generate_certificates_ui(deltagere, template_file, signature_file, tekst)
 
         render_download_and_email_section()
     else:
